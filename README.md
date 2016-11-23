@@ -1,7 +1,9 @@
-# A simple thread group
+# A simple thread group
 
 The user instanciates a ThreadGroup parameterized to process a maximum number of threads at a time.
+
 The user then *add*s to the ThreadGroup functions and their arguments.
+
 This *add* method blocks until there is room to launch the function in a thread.
 
 # TODO
