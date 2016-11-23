@@ -4,91 +4,52 @@
 #include <list>
 #include <thread>
 #include <atomic>
-#include <algorithm>
 
-class ThreadWrapper;
-void run(ThreadWrapper* that, void f(void*), void* arg);
-
-class ThreadWrapper
-{
-public:
-	ThreadWrapper(void f(void*), void* arg)
-		: finished_(false),
-		  thread_(std::thread(run, this, f, arg))
-	{
-	}
-
-	~ThreadWrapper()
-	{
-		if(thread_.joinable())
-			thread_.join();
-	}
-
-	bool finished() const { return finished_; }
-	void setFinished() { finished_ = true; }
-
-private:
-	std::atomic<bool> finished_;
-	std::thread thread_;
-};
-
-void run(ThreadWrapper* that, void f(void*), void* arg)
-{
-	f(arg);
-	that->setFinished();
-}
 
 class ThreadGroup
 {
-public:
-	ThreadGroup() : counter_(0), max_(5) {}
-
-	~ThreadGroup()
+	class ThreadWrapper
 	{
-		std::list<ThreadWrapper*>::iterator it = threads_.begin();
-		while(it != threads_.end())
+	public:
+		ThreadWrapper(void f(void*), void* arg)
+			: finished_(false)
+			, thread_( [this, f, arg]{ f(arg); this->setFinished(); })
+		{ }
+
+		~ThreadWrapper()
 		{
-			delete *it;
-			++it;
+			if(thread_.joinable())
+				thread_.join();
 		}
-	}
+
+		bool finished() const { return finished_.load(); }
+		void setFinished() { finished_ = true; }
+
+	private:
+		std::atomic<bool> finished_;
+		std::thread thread_;
+	};
+
+public:
+	ThreadGroup(size_t maxThreads = 5) : maxThreads_(maxThreads) {}
+
+	ThreadGroup(ThreadGroup&) = delete;
+	void operator=(ThreadGroup&) = delete;
 
 	void add(void f(void*), void* arg)
 	{
-		ThreadWrapper* th = new ThreadWrapper(f, arg);
-		threads_.push_back(th);
-
-		if(++counter_ >= max_)
-			cleanUp();
-	}
-
-	void cleanUp()
-	{
-		if(threads_.empty())
-			return;
-
-		size_t previousSize = threads_.size();
-
-		std::list<ThreadWrapper*>::iterator it = threads_.begin();
-
-		while(it != threads_.end())
-		{
-			if((*it)->finished())
-			{
-				delete *it;
-				it = threads_.erase(it);
-			}
-			else
-				++it;
+		while(threads_.size() >= maxThreads_) {
+			threads_.remove_if( [](auto& ptw){ return ptw->finished(); } );
+			std::this_thread::yield();
 		}
 
-		if(previousSize != threads_.size())
-			std::cout << "Cleanup: " << previousSize << "->" << threads_.size() << std::endl;
+		threads_.emplace_back(new ThreadWrapper(f, arg));
+		std::cout << "number of threads: " << threads_.size() << std::endl;
 	}
 
 private:
-	std::list<ThreadWrapper*> threads_;
-	size_t counter_, max_;
+	std::list< std::unique_ptr<ThreadWrapper> > threads_;
+	size_t maxThreads_;
 };
 
 

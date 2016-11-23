@@ -1,10 +1,10 @@
 # This file is included by all the Makefiles of this repository.
 
 # Uncomment to use g++
-COMPILER = g++ -W -Wall -Wfatal-errors -fdiagnostics-color -std=c++11
+COMPILER = g++ -Wall -pedantic -Wfatal-errors -fdiagnostics-color -std=c++1y -O2
 LIBS = -lpthread
 
 # Uncomment to use clang
-#COMPILER = clang++ -W -Wall -Wfatal-errors -fdiagnostics-color -std=c++11
-#LIBS =
+#COMPILER = clang++ -pedantic -Wall -Wfatal-errors -fdiagnostics-color -std=c++1y -O2
+#LIBS = -lpthread
 

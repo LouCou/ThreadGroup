@@ -4,14 +4,15 @@ include inc.mk
 
 SOURCES = ${wildcard *.cpp}
 OBJECTS = ${SOURCES:.cpp=.o}
+EXECNAME = run.out
 
 all: $(OBJECTS)
-	$(COMPILER) -o run.exe *.o $(LIBS)
+	$(COMPILER) -o $(EXECNAME) *.o $(LIBS)
 
 clean:
-	rm -f ./*.o
-	rm -f ./*.exe
+	rm -f *.o
+	rm -f $(EXECNAME)
 	
 %.o: %.cpp
-	$(COMPILER) -o $@ -c $< 
+	$(COMPILER) -o $@ -c $<
 
