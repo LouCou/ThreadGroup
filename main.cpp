@@ -17,14 +17,14 @@ void handle(void* arg)
 {
 	std::unique_ptr<Cat> cat( (Cat*) arg );
 	// do something useful cat!
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::seconds(3));
 }
 
 int main()
 {
-	ThreadGroup group;
+	ThreadGroup group(5);
 
-	for(int i=0; i<20; ++i)
+	for(int i=0; i<15; ++i)
 	{
 		Cat * cat = new Cat("minou", i);
 		group.add(handle, cat);
