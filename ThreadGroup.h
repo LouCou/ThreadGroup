@@ -21,7 +21,7 @@ public:
 		increment();
 
 		std::thread th([this,f,arg](){
-				RaiiDecrementor<ThreadGroup> raii(*this);
+				Raii raii(*this); // will decrement when destroyed
 				f(arg);
 			});
 
@@ -35,11 +35,10 @@ private:
 	unsigned int max_;
 	std::atomic<unsigned int> running_;
 
-	template<typename T>
-	struct RaiiDecrementor {
-		RaiiDecrementor(T& t) : t_(t) { }
-		~RaiiDecrementor() { t_.decrement(); }
-		T& t_;
+	struct Raii {
+		Raii(ThreadGroup& t) : t_(t) { }
+		~Raii() { t_.decrement(); }
+		ThreadGroup& t_;
 	};
 
 	ThreadGroup(ThreadGroup&) = delete;
