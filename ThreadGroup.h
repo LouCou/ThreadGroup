@@ -18,7 +18,7 @@ public:
 		while(running_.load() >= max_)
 			std::this_thread::yield();
 
-		increment();
+		running_++;
 
 		std::thread th([this,f,arg](){
 				Raii raii(*this); // will decrement when destroyed
@@ -28,17 +28,14 @@ public:
 		th.detach();
 	}
 
-	void increment() { running_++; }
-	void decrement() { running_--; }
-
 private:
 	unsigned int max_;
 	std::atomic<unsigned int> running_;
 
 	struct Raii {
-		Raii(ThreadGroup& t) : t_(t) { }
-		~Raii() { t_.decrement(); }
-		ThreadGroup& t_;
+		Raii(ThreadGroup& tg) : tg_(tg) { }
+		~Raii() { tg_.running_--; }
+		ThreadGroup& tg_;
 	};
 
 	ThreadGroup(ThreadGroup&) = delete;
