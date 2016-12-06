@@ -5,7 +5,7 @@ The user then *adds* to the ThreadGroup functions and their arguments.
 This *add* method blocks until there is room to launch the function in a thread.
 
 # TODO
-- void add(void f(void&ast;), void&ast; arg) is notuser friendly, use some std::function and templates
+- void add(void f(void *), void * arg) is notuser friendly, use some std::function and templates
 - measure the performance
 - fix Makefile so main.cpp is rebuilt when ThreadGroup changes
 - maybe a non-blocking add: enqueue
